@@ -63,7 +63,7 @@ def send_email_with_attachment(to_addresses, body, attachment_path):
         try:
             with smtplib.SMTP("smtp.gmail.com", 587) as server:
                 server.starttls()
-                server.login("s.simar123@gmail.com", "teis cxgy mspz wnhh")  # App password
+                server.login("YOUR_EMAIL", "YOUR_APP_PASSWORD")  # App password
                 server.send_message(msg)
         except Exception as e:
             print(f"Failed to send to {to_address}: {e}")
@@ -73,7 +73,7 @@ def button1_action():
         credential = AzureCliCredential()
         client = CostManagementClient(credential)
 
-        subscription_id = "f131ab3d-ecbf-4ce4-b2c2-c937dc44a331"
+        subscription_id = "YOUR_SUBSCRIPTION_ID"  # Replace with your Azure subscription ID
         scope = f"/subscriptions/{subscription_id}"
 
         # Load email recipients
