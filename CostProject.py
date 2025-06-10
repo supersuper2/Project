@@ -15,7 +15,7 @@ from azure.identity import AzureCliCredential
 from azure.mgmt.costmanagement import CostManagementClient
 from azure.core.exceptions import HttpResponseError
 
-def create_excel_report(rows, file_path):
+def create_excel_report(rows, file_path, subscription_id):
     wb = Workbook()
     ws = wb.active
     ws.title = "Azure Cost Report"
@@ -38,10 +38,9 @@ def create_excel_report(rows, file_path):
             continue
 
     # Add total at the end
-    ws.append(["", "TOTAL", total_cost])
+    ws.append(["", f"TOTAL for Subscription: {subscription_id}", total_cost])
     wb.save(file_path)
     return total_cost
-
 
 def send_email_with_attachment(to_addresses, body, attachment_path):
     for to_address in to_addresses:
@@ -68,7 +67,6 @@ def send_email_with_attachment(to_addresses, body, attachment_path):
                 server.send_message(msg)
         except Exception as e:
             print(f"Failed to send to {to_address}: {e}")
-
 
 def button1_action():
     try:
@@ -111,8 +109,15 @@ def button1_action():
         if rows and all(isinstance(col, str) for col in rows[0]):
             rows = rows[1:]
 
-        file_path = "azure_cost_report.xlsx"
-        total_cost = create_excel_report(rows, file_path)
+        # Ensure reports directory exists
+        reports_dir = os.path.join(os.getcwd(), "reports")
+        os.makedirs(reports_dir, exist_ok=True)
+
+        # Generate a unique file name based on timestamp
+        timestamp = datetime.now().strftime("%Y-%m-%d")
+        file_path = os.path.join(reports_dir, f"azure_cost_report_{timestamp}.xlsx")
+
+        total_cost = create_excel_report(rows, file_path, subscription_id)
 
         summary = f"Azure Monthly Spend Report\n\nTotal Subscription Cost (MonthToDate): ${total_cost:.2f}\n\nSee attached Excel file for details."
         send_email_with_attachment(recipients, summary, file_path)
@@ -123,7 +128,6 @@ def button1_action():
         messagebox.showerror("Azure API Error", f"Error retrieving data:\n{e}")
     except Exception as e:
         messagebox.showerror("Error", f"An unexpected error occurred:\n{e}")
-
 
 # Tkinter GUI setup
 root = tk.Tk()
